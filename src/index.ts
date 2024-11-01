@@ -5,7 +5,9 @@ import fs from "fs";
 import audioPlayer from "play-sound";
 
 const AudioPlayer = audioPlayer({
-  player: "mplayer",
+  // the audio player changes depending on your system.
+  // on macOS, you can typically use `afplay`
+  player: "afplay",
 });
 
 const openai = new OpenAI();
