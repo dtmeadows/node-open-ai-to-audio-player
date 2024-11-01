@@ -21,7 +21,7 @@ async function streamingDemoNode() {
   const response = await openai.audio.speech.create({
     model: "tts-1",
     voice: "alloy",
-    input: "the quick brown chicken jumped over the lazy dogs",
+    input: "to be or not to be, that is the question",
   });
 
   const stream = response.body;
