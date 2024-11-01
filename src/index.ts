@@ -1,20 +1,14 @@
 import "openai/shims/node";
 
-import OpenAI, { toFile } from "openai";
+import OpenAI from "openai";
 import fs from "fs";
-import path from "path";
 import audioPlayer from "play-sound";
-import os from "os";
-import { withTempFile } from "./utils";
 
 const AudioPlayer = audioPlayer({
   player: "mplayer",
 });
 
-// gets API Key from environment variable OPENAI_API_KEY
 const openai = new OpenAI();
-
-const speechFile = path.resolve(__dirname, "./speech.mp3");
 
 async function main() {
   await streamingDemoNode();
@@ -22,26 +16,30 @@ async function main() {
 main();
 
 async function streamingDemoNode() {
-  withTempFile(async (speechFile: string) => {
-    const response = await openai.audio.speech.create({
-      model: "tts-1",
-      voice: "alloy",
-      input: "the quick brown chicken jumped over the lazy dogs",
-    });
-
-    const stream = response.body;
-    for await (const chunk of stream) {
-      console.debug(`Received ${chunk.length} bytes`);
-    }
-
-    console.log(`Streaming response to temp file: ${speechFile}`);
-    await streamToFile(stream, speechFile);
-
-    AudioPlayer.play("speech.mp3", function (err: unknown) {
-      if (err) throw err;
-    });
-    console.log("Finished streaming");
+  const mp3Path = "speech.mp3";
+  console.debug("📡 Sending request to OpenAI");
+  const response = await openai.audio.speech.create({
+    model: "tts-1",
+    voice: "alloy",
+    input: "the quick brown chicken jumped over the lazy dogs",
   });
+
+  const stream = response.body;
+
+  // can show off how to read through chunks manually here
+  // for await (const chunk of stream) {
+  //   console.debug(`Received ${chunk.length} bytes`);
+  // }
+
+  console.debug(`🌊 Streaming response to temp file: ${mp3Path}`);
+  await streamToFile(stream, mp3Path);
+  console.debug("✅ Finished streaming");
+
+  console.debug(`🔊 Playing ${mp3Path}`);
+  AudioPlayer.play(mp3Path, function (err: unknown) {
+    if (err) throw err;
+  });
+  console.debug("👋 We're done!");
 }
 
 async function streamToFile(stream: NodeJS.ReadableStream, path: fs.PathLike) {
@@ -51,10 +49,9 @@ async function streamToFile(stream: NodeJS.ReadableStream, path: fs.PathLike) {
       .on("error", reject)
       .on("finish", resolve);
 
-    // If you don't see a `stream.pipe` method and you're using Node you might need to add `import 'openai/shims/node'` at the top of your entrypoint file.
     stream
       .pipe(writeStream)
-      .on("drain", () => {
+      .on("ready", () => {
         console.debug("[stream-ready]");
       })
       .on("open", () => {
