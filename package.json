@@ -4,7 +4,8 @@
   "license": "MIT",
   "main": "build/index.js",
   "scripts": {
-    "start": "ts-node src/index.ts"
+    "play-locally": "ts-node src/scripts/stream-live-player.ts",
+    "start": "ts-node src/server.ts"
   },
   "devDependencies": {
     "@types/play-sound": "^1.1.2",
@@ -12,6 +13,8 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
+    "@types/express": "^5.0.0",
+    "express": "^4.21.1",
     "openai": "^4.69.0",
     "play-sound": "^1.1.6",
     "ts-node": "^10.9.2",
